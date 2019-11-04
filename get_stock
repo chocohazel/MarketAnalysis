@@ -1,6 +1,5 @@
 #!/bin/bash
 #Author: Kshitij Kayastha
-#Copy: First Draft
 
 SYMBOL=$1
 # Checking to see if input was given as cmd line arg
