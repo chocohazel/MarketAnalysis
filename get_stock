@@ -1,0 +1,55 @@
+#!/bin/bash
+#Author: Kshitij Kayastha
+#Copy: First Draft
+
+SYMBOL=$1
+# Checking to see if input was given as cmd line arg
+if [[ -z $SYMBOL ]]; then
+        echo "Please enter a SYMBOL as the first parameter"
+        exit
+fi
+echo "Downloading quotes for $SYMBOL"
+
+
+start_date=0     # Assuming we want all the data from 1/1/1970
+end_date=$(date +%s)    # Provides time in seconds (UTC time)
+
+#Store the cookie in a temp file
+cookie_jar=$(mktemp)
+
+# Get the crumb value
+function get_crumb(){
+# Echo converts octal characters
+# Curl the url then replace the } characters with line feeds. This takes the large json one line and turns it into about 3000 lines
+# grep for the CrumbStore line and then remove any quotes
+
+        echo -en "$(curl -s --cookie-jar $cookie_jar $1)" | tr "}" "\n" | grep "CrumbStore" | cut -d':' -f 3 | sed 's+"++g'
+}
+
+# If crumb is blank then we don't have valid symbol
+url="https://finance.yahoo.com/quote/$SYMBOL/?p=$SYMBOL"
+crumb=$(get_crumb $url)
+
+if [[ -z $crumb ]]; then
+        echo "Error finding a valid crumb value"
+        exit
+fi
+
+# Build url with SYMBOL, startDate, endDate
+base_url="https://query1.finance.yahoo.com/v7/finance/download/$SYMBOL?period1=$start_date&period2=$end_date&interval=1d&events=history"
+
+# Add the crumb value
+url="$base_url&crumb=$crumb"
+
+data_repo="StockInfo"
+# Create new directory
+if [[ ! -d "$data_repo" ]]; then
+        echo "Creating a directory caled StockInfo"
+        mkdir $data_repo
+fi
+
+cd $data_repo
+# Download data to appropriate file
+curl -s --cookie $cookie_jar $url > $SYMBOL.csv
+
+echo "Data downloaded to $SYMBOL.csv"

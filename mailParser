@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# $1 an email adress (The default email adress is )
+# $2 should be a full path to a directory that contains files you would like to test mailParser
+# mailT is the test directory made
+cd $2
+ls *.csv -1 | while read line
+do
+        inc=$(cat $line | tail -n2 | awk -F ',' -v var=${line:: -4}  'BEGIN {f=100000000} $2 > f*.2+f {print var " Increased by more than 20%!!!"} {f=$5}') #mails user if stock increased by 20% and below line does it for decreasing
+        dec=$(cat $line | tail -n2 | awk -F ',' -v var=${line:: -4} '$2<f-f*.2 {print var " Decreased by more than 20%!!! "} {f=$5}')
+        [ -z "$inc" ] || (echo "$inc" | mail -s "Stocks" $1)
+        [ -z "$dec" ] || (echo "$dec" | mail -s "Stocks" $1)
+done
