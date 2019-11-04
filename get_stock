@@ -43,7 +43,7 @@ url="$base_url&crumb=$crumb"
 data_repo="StockInfo"
 # Create new directory
 if [[ ! -d "$data_repo" ]]; then
-        echo "Creating a directory caled StockInfo"
+        echo "Creating a directory called StockInfo"
         mkdir $data_repo
 fi
 
